@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-
-interface Product {
-  name: string;
-  quantity: number;
-  price: number;
-}
+import { Invoice, Product } from "@/types/invoice";
+import InvoiceModal from "@/components/InvoiceModal";
+import InvoiceList from "@/components/InvoiceList";
 
 const Index = () => {
   const [productType, setProductType] = useState<string>('laptops');
@@ -29,6 +25,12 @@ const Index = () => {
   
   // Método de pago
   const [paymentMethod, setPaymentMethod] = useState<string>('credit-card');
+
+  // Facturas guardadas
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [showInvoiceList, setShowInvoiceList] = useState(false);
 
   const laptops = [
     { name: 'MacBook Air M2', price: 1199 },
@@ -69,6 +71,10 @@ const Index = () => {
     return products.reduce((total, product) => total + (product.quantity * product.price), 0);
   };
 
+  const generateInvoiceNumber = () => {
+    return `INV-${Date.now()}`;
+  };
+
   const handleSubmit = () => {
     if (!clientName || !clientEmail || products.length === 0) {
       toast({
@@ -79,9 +85,32 @@ const Index = () => {
       return;
     }
 
+    // Crear nueva factura
+    const newInvoice: Invoice = {
+      id: Date.now().toString(),
+      number: generateInvoiceNumber(),
+      date: new Date().toISOString(),
+      clientName,
+      clientEmail,
+      clientAddress,
+      products: [...products],
+      paymentMethod,
+      total: calculateTotal(),
+      status: 'created'
+    };
+
+    // Guardar factura
+    const updatedInvoices = [...invoices, newInvoice];
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
+    // Mostrar factura creada
+    setCurrentInvoice(newInvoice);
+    setIsInvoiceModalOpen(true);
+
     toast({
       title: "Factura creada exitosamente",
-      description: `Factura para ${clientName} por $${calculateTotal().toFixed(2)}`,
+      description: `Factura ${newInvoice.number} para ${clientName} por $${calculateTotal().toFixed(2)}`,
     });
 
     // Reset form
@@ -93,16 +122,55 @@ const Index = () => {
     setSelectedProduct('');
   };
 
+  // Cargar facturas guardadas al inicializar
+  useState(() => {
+    const savedInvoices = localStorage.getItem('invoices');
+    if (savedInvoices) {
+      setInvoices(JSON.parse(savedInvoices));
+    }
+  });
+
+  const handleCloseInvoiceModal = () => {
+    setIsInvoiceModalOpen(false);
+    setCurrentInvoice(null);
+  };
+
+  if (showInvoiceList) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6 flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Facturas Guardadas</h1>
+            <Button onClick={() => setShowInvoiceList(false)}>
+              Crear Nueva Factura
+            </Button>
+          </div>
+          <InvoiceList invoices={invoices} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-4 flex justify-between items-center">
+          <div></div>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowInvoiceList(true)}
+            disabled={invoices.length === 0}
+          >
+            Ver Facturas ({invoices.length})
+          </Button>
+        </div>
+
         <Card className="shadow-lg">
           <CardHeader className="bg-blue-600 text-white">
             <CardTitle className="text-2xl text-center font-bold">NUEVA FACTURA</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             
-            {/* Selección de productos */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Selección de productos</h3>
               
@@ -163,7 +231,6 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Tabla de productos */}
             {products.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Productos agregados</h3>
@@ -203,7 +270,6 @@ const Index = () => {
               </div>
             )}
 
-            {/* Datos del cliente */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Datos del cliente</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,7 +305,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Métodos de pago */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Métodos de pago</h3>
@@ -260,7 +325,6 @@ const Index = () => {
                 </RadioGroup>
               </div>
 
-              {/* Vista previa de factura */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Vista previa de factura</h3>
                 <div className="bg-white border rounded-lg p-4 min-h-[200px]">
@@ -285,7 +349,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Botón de emisión */}
             <div className="text-center pt-6">
               <Button 
                 onClick={handleSubmit} 
@@ -298,6 +361,12 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+
+      <InvoiceModal 
+        invoice={currentInvoice}
+        isOpen={isInvoiceModalOpen}
+        onClose={handleCloseInvoiceModal}
+      />
     </div>
   );
 };

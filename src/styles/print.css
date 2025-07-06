@@ -1,0 +1,21 @@
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .invoice-content {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  @page {
+    margin: 1cm;
+  }
+}
