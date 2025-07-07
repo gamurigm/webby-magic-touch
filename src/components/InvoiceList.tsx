@@ -1,27 +1,75 @@
 
 import { useState } from 'react';
-import { Invoice } from "@/types/invoice";
+import { Invoice, CreditNote } from "@/types/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Eye, Ban, FileText } from "lucide-react";
 import InvoiceModal from "./InvoiceModal";
+import CancelInvoiceDialog from "./CancelInvoiceDialog";
+import CreditNoteDialog from "./CreditNoteDialog";
 
 interface InvoiceListProps {
   invoices: Invoice[];
+  onUpdateInvoice: (invoice: Invoice) => void;
+  onCreateCreditNote: (creditNote: CreditNote) => void;
 }
 
-const InvoiceList = ({ invoices }: InvoiceListProps) => {
+const InvoiceList = ({ invoices, onUpdateInvoice, onCreateCreditNote }: InvoiceListProps) => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isCreditNoteDialogOpen, setIsCreditNoteDialogOpen] = useState(false);
+  const [invoiceToCancel, setInvoiceToCancel] = useState<Invoice | null>(null);
+  const [invoiceForCreditNote, setInvoiceForCreditNote] = useState<Invoice | null>(null);
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setIsModalOpen(true);
   };
 
+  const handleCancelInvoice = (invoice: Invoice) => {
+    setInvoiceToCancel(invoice);
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleCreateCreditNote = (invoice: Invoice) => {
+    setInvoiceForCreditNote(invoice);
+    setIsCreditNoteDialogOpen(true);
+  };
+
+  const handleConfirmCancel = (invoice: Invoice, reason: string) => {
+    const updatedInvoice: Invoice = {
+      ...invoice,
+      status: 'cancelled',
+      cancelledDate: new Date().toISOString(),
+      cancelReason: reason
+    };
+    onUpdateInvoice(updatedInvoice);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedInvoice(null);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'sent': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'paid': return 'Pagada';
+      case 'sent': return 'Enviada';
+      case 'cancelled': return 'Anulada';
+      default: return 'Creada';
+    }
   };
 
   if (invoices.length === 0) {
@@ -60,23 +108,42 @@ const InvoiceList = ({ invoices }: InvoiceListProps) => {
                   <TableCell>{invoice.clientName}</TableCell>
                   <TableCell>${invoice.total.toFixed(2)}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                      invoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {invoice.status === 'paid' ? 'Pagada' :
-                       invoice.status === 'sent' ? 'Enviada' : 'Creada'}
+                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(invoice.status)}`}>
+                      {getStatusText(invoice.status)}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleViewInvoice(invoice)}
-                    >
-                      Ver
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewInvoice(invoice)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver Factura
+                        </DropdownMenuItem>
+                        {invoice.status !== 'cancelled' && (
+                          <>
+                            <DropdownMenuItem 
+                              onClick={() => handleCreateCreditNote(invoice)}
+                              className="text-blue-600"
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              Nota de Crédito
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleCancelInvoice(invoice)}
+                              className="text-red-600"
+                            >
+                              <Ban className="mr-2 h-4 w-4" />
+                              Anular Factura
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -89,6 +156,20 @@ const InvoiceList = ({ invoices }: InvoiceListProps) => {
         invoice={selectedInvoice}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+      />
+
+      <CancelInvoiceDialog
+        invoice={invoiceToCancel}
+        isOpen={isCancelDialogOpen}
+        onClose={() => setIsCancelDialogOpen(false)}
+        onCancel={handleConfirmCancel}
+      />
+
+      <CreditNoteDialog
+        invoice={invoiceForCreditNote}
+        isOpen={isCreditNoteDialogOpen}
+        onClose={() => setIsCreditNoteDialogOpen(false)}
+        onCreateCreditNote={onCreateCreditNote}
       />
     </>
   );

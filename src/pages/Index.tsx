@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Invoice, Product } from "@/types/invoice";
+import { Invoice, Product, CreditNote } from "@/types/invoice";
 import InvoiceModal from "@/components/InvoiceModal";
 import InvoiceList from "@/components/InvoiceList";
 
@@ -28,6 +28,7 @@ const Index = () => {
 
   // Facturas guardadas
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [showInvoiceList, setShowInvoiceList] = useState(false);
@@ -73,6 +74,32 @@ const Index = () => {
 
   const generateInvoiceNumber = () => {
     return `INV-${Date.now()}`;
+  };
+
+  const handleUpdateInvoice = (updatedInvoice: Invoice) => {
+    const updatedInvoices = invoices.map(inv => 
+      inv.id === updatedInvoice.id ? updatedInvoice : inv
+    );
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    
+    toast({
+      title: updatedInvoice.status === 'cancelled' ? "Factura anulada" : "Factura actualizada",
+      description: updatedInvoice.status === 'cancelled' 
+        ? `La factura ${updatedInvoice.number} ha sido anulada`
+        : `La factura ${updatedInvoice.number} ha sido actualizada`,
+    });
+  };
+
+  const handleCreateCreditNote = (creditNote: CreditNote) => {
+    const updatedCreditNotes = [...creditNotes, creditNote];
+    setCreditNotes(updatedCreditNotes);
+    localStorage.setItem('creditNotes', JSON.stringify(updatedCreditNotes));
+    
+    toast({
+      title: "Nota de crédito creada",
+      description: `Nota de crédito ${creditNote.number} por $${creditNote.total.toFixed(2)}`,
+    });
   };
 
   const handleSubmit = () => {
@@ -122,11 +149,16 @@ const Index = () => {
     setSelectedProduct('');
   };
 
-  // Cargar facturas guardadas al inicializar
+  // Load saved data on initialization
   useState(() => {
     const savedInvoices = localStorage.getItem('invoices');
+    const savedCreditNotes = localStorage.getItem('creditNotes');
+    
     if (savedInvoices) {
       setInvoices(JSON.parse(savedInvoices));
+    }
+    if (savedCreditNotes) {
+      setCreditNotes(JSON.parse(savedCreditNotes));
     }
   });
 
@@ -140,12 +172,16 @@ const Index = () => {
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6 flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Facturas Guardadas</h1>
+            <h1 className="text-3xl font-bold">Gestión de Facturas</h1>
             <Button onClick={() => setShowInvoiceList(false)}>
               Crear Nueva Factura
             </Button>
           </div>
-          <InvoiceList invoices={invoices} />
+          <InvoiceList 
+            invoices={invoices} 
+            onUpdateInvoice={handleUpdateInvoice}
+            onCreateCreditNote={handleCreateCreditNote}
+          />
         </div>
       </div>
     );
