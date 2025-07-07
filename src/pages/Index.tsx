@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Invoice, Product, CreditNote } from "@/types/invoice";
+import { calculateTaxes } from "@/utils/taxCalculations";
 import InvoiceModal from "@/components/InvoiceModal";
 import InvoiceList from "@/components/InvoiceList";
 
@@ -68,10 +69,6 @@ const Index = () => {
     setProducts(products.filter((_, i) => i !== index));
   };
 
-  const calculateTotal = () => {
-    return products.reduce((total, product) => total + (product.quantity * product.price), 0);
-  };
-
   const generateInvoiceNumber = () => {
     return `INV-${Date.now()}`;
   };
@@ -112,6 +109,9 @@ const Index = () => {
       return;
     }
 
+    // Calcular impuestos
+    const { subtotal, iva, total } = calculateTaxes(products);
+
     // Crear nueva factura
     const newInvoice: Invoice = {
       id: Date.now().toString(),
@@ -122,7 +122,9 @@ const Index = () => {
       clientAddress,
       products: [...products],
       paymentMethod,
-      total: calculateTotal(),
+      subtotal,
+      iva,
+      total,
       status: 'created'
     };
 
@@ -137,7 +139,7 @@ const Index = () => {
 
     toast({
       title: "Factura creada exitosamente",
-      description: `Factura ${newInvoice.number} para ${clientName} por $${calculateTotal().toFixed(2)}`,
+      description: `Factura ${newInvoice.number} para ${clientName} por $${total.toFixed(2)}`,
     });
 
     // Reset form
@@ -166,6 +168,9 @@ const Index = () => {
     setIsInvoiceModalOpen(false);
     setCurrentInvoice(null);
   };
+
+  // Calculate totals for preview
+  const { subtotal, iva, total } = calculateTaxes(products);
 
   if (showInvoiceList) {
     return (
@@ -300,8 +305,10 @@ const Index = () => {
                     ))}
                   </TableBody>
                 </Table>
-                <div className="mt-4 text-right">
-                  <p className="text-xl font-bold">Total: ${calculateTotal().toFixed(2)}</p>
+                <div className="mt-4 space-y-2 text-right">
+                  <p className="text-lg">Subtotal: ${subtotal.toFixed(2)}</p>
+                  <p className="text-lg">IVA (12%): ${iva.toFixed(2)}</p>
+                  <p className="text-xl font-bold border-t pt-2">Total: ${total.toFixed(2)}</p>
                 </div>
               </div>
             )}
@@ -376,8 +383,19 @@ const Index = () => {
                           <span>${(product.quantity * product.price).toFixed(2)}</span>
                         </div>
                       ))}
-                      <div className="border-t pt-2 font-bold text-right">
-                        Total: ${calculateTotal().toFixed(2)}
+                      <div className="border-t pt-2 space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span>Subtotal:</span>
+                          <span>${subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>IVA (12%):</span>
+                          <span>${iva.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold">
+                          <span>Total:</span>
+                          <span>${total.toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   )}

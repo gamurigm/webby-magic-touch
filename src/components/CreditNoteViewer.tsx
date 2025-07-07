@@ -1,4 +1,3 @@
-
 import { CreditNote } from "@/types/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -74,9 +73,18 @@ const CreditNoteViewer = ({ creditNote, onPrint, onExportPDF }: CreditNoteViewer
           
           <div className="mt-6 border-t pt-4">
             <div className="flex justify-end">
-              <div className="text-right space-y-2">
-                <div className="text-2xl font-bold text-red-600">
-                  Total Acreditado: ${creditNote.total.toFixed(2)}
+              <div className="text-right space-y-2 min-w-[200px]">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>${creditNote.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>IVA (12%):</span>
+                  <span>${creditNote.iva.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-2xl font-bold text-red-600 border-t pt-2">
+                  <span>Total Acreditado:</span>
+                  <span>${creditNote.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

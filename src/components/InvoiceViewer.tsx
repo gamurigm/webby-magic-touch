@@ -1,4 +1,3 @@
-
 import { Invoice } from "@/types/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -93,9 +92,18 @@ const InvoiceViewer = ({ invoice, onPrint, onExportPDF }: InvoiceViewerProps) =>
           
           <div className="mt-6 border-t pt-4">
             <div className="flex justify-end">
-              <div className="text-right space-y-2">
-                <div className="text-2xl font-bold">
-                  Total: ${invoice.total.toFixed(2)}
+              <div className="text-right space-y-2 min-w-[200px]">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>${invoice.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>IVA (12%):</span>
+                  <span>${invoice.iva.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-2xl font-bold border-t pt-2">
+                  <span>Total:</span>
+                  <span>${invoice.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

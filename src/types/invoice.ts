@@ -8,6 +8,8 @@ export interface Invoice {
   clientAddress: string;
   products: Product[];
   paymentMethod: string;
+  subtotal: number;
+  iva: number;
   total: number;
   status: 'created' | 'sent' | 'paid' | 'cancelled';
   cancelledDate?: string;
@@ -29,6 +31,8 @@ export interface CreditNote {
   clientName: string;
   clientEmail: string;
   products: Product[];
+  subtotal: number;
+  iva: number;
   total: number;
   reason: string;
 }
