@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { Invoice, Product, CreditNote } from "@/types/invoice";
+import { calculateTaxes } from "@/utils/taxCalculations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,22 +44,10 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
     }));
   };
 
-  const calculateTotal = () => {
-    if (!invoice) return 0;
+  const getCreditNoteProducts = (): Product[] => {
+    if (!invoice) return [];
     
-    return Object.entries(selectedProducts).reduce((total, [index, data]) => {
-      if (data.selected && data.quantity > 0) {
-        const product = invoice.products[parseInt(index)];
-        return total + (product.price * data.quantity);
-      }
-      return total;
-    }, 0);
-  };
-
-  const handleCreateCreditNote = () => {
-    if (!invoice || !reason.trim()) return;
-
-    const creditNoteProducts: Product[] = Object.entries(selectedProducts)
+    return Object.entries(selectedProducts)
       .filter(([_, data]) => data.selected && data.quantity > 0)
       .map(([index, data]) => {
         const originalProduct = invoice.products[parseInt(index)];
@@ -68,8 +57,20 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
           price: originalProduct.price
         };
       });
+  };
 
+  const getTaxCalculations = () => {
+    const products = getCreditNoteProducts();
+    return calculateTaxes(products);
+  };
+
+  const handleCreateCreditNote = () => {
+    if (!invoice || !reason.trim()) return;
+
+    const creditNoteProducts = getCreditNoteProducts();
     if (creditNoteProducts.length === 0) return;
+
+    const { subtotal, iva, total } = getTaxCalculations();
 
     const creditNote: CreditNote = {
       id: Date.now().toString(),
@@ -80,7 +81,9 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
       clientName: invoice.clientName,
       clientEmail: invoice.clientEmail,
       products: creditNoteProducts,
-      total: calculateTotal(),
+      subtotal,
+      iva,
+      total,
       reason
     };
 
@@ -97,6 +100,8 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
   };
 
   if (!invoice) return null;
+
+  const { subtotal, iva, total } = getTaxCalculations();
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -171,10 +176,19 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
               </TableBody>
             </Table>
             
-            <div className="text-right border-t pt-4">
-              <p className="text-lg font-bold">
-                Total Nota de Crédito: ${calculateTotal().toFixed(2)}
-              </p>
+            <div className="text-right border-t pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>IVA (12%):</span>
+                <span>${iva.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total Nota de Crédito:</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -185,7 +199,7 @@ const CreditNoteDialog = ({ invoice, isOpen, onClose, onCreateCreditNote }: Cred
           </Button>
           <Button 
             onClick={handleCreateCreditNote}
-            disabled={!reason.trim() || calculateTotal() === 0}
+            disabled={!reason.trim() || total === 0}
           >
             Crear Nota de Crédito
           </Button>
