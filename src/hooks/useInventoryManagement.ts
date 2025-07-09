@@ -32,7 +32,7 @@ export const useInventoryManagement = () => {
           id: `${model.id}-SN${idx+1}`,
           laptopModelId: model.id,
           serialNumber: `${model.id}-SN${idx+1}`,
-          status: 'available',
+          status: "available" as const,
           dateAdded: new Date().toISOString(),
           location: model.location
         }))
