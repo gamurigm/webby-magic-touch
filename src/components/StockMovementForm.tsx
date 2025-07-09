@@ -93,9 +93,6 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
     }
   }, [selectedModelId]);
 
-  // Calcular costo total
-  const totalCost = quantity * (parseFloat(unitCost) || 0);
-
   const handleSubmit = () => {
     if (!category || !brand || !model || !processor || !ram || !storage || !gpu || !location || !unitCost || !quantity) {
       toast({
@@ -124,9 +121,8 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
         minimumStock: 1,
         location
       };
-      addLaptopModel(newModel);
-      const created = [...laptopModels, newModel].reverse().find(m => m.model === model && m.brand === brand);
-      modelId = created ? created.id : '';
+      const createdModel = addLaptopModel(newModel); // Recibe el modelo creado con id
+      modelId = createdModel.id;
     }
     if (!modelId) {
       toast({ title: "Error", description: "No se pudo identificar el modelo." });
@@ -273,10 +269,6 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
               <div>
                 <Label>Costo Unitario (USD)</Label>
                 <Input type="number" min={0} step={0.01} value={unitCost} onChange={e => setUnitCost(e.target.value)} placeholder="$0.00" disabled={!!selectedModelId} />
-              </div>
-              <div className="md:col-span-2">
-                <Label>Costo Total</Label>
-                <Input value={totalCost.toFixed(2)} readOnly disabled />
               </div>
               <div className="md:col-span-2">
                 <Label>Ubicación Física</Label>

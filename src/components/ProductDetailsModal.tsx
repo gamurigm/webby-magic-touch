@@ -195,8 +195,8 @@ const ProductDetailsModal = ({ isOpen, onClose, product }: ProductDetailsModalPr
                   </span>
                 </div>
                 <div className="col-span-2 flex items-center gap-2">
-                  <span className="text-lg font-bold text-green-700">Valor total:</span>
-                  <span className="text-green-700 font-semibold text-lg">${product.totalValue.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-green-700">Costo unitario:</span>
+                  <span className="text-green-700 font-semibold text-lg">${product.totalValue && product.currentStock ? (product.totalValue / product.currentStock).toFixed(2) : '0.00'}</span>
                 </div>
               </div>
               {product.description && (

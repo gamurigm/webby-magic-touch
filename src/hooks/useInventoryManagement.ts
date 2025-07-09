@@ -173,6 +173,7 @@ export const useInventoryManagement = () => {
     const updatedModels = [...laptopModels, newModel];
     setLaptopModels(updatedModels);
     localStorage.setItem('laptopModels', JSON.stringify(updatedModels));
+    return newModel; // Ahora retorna el modelo creado
   };
 
   const updateLaptopModel = (modelId: string, updates: Partial<LaptopModel>) => {
