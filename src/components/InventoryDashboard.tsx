@@ -8,11 +8,8 @@ import { Package, AlertTriangle, TrendingDown, TrendingUp, Plus } from "lucide-r
 import { useInventoryManagement } from "@/hooks/useInventoryManagement";
 import InventoryList from "./InventoryList";
 import StockMovementForm from "./StockMovementForm";
-import LaptopModelForm from "./LaptopModelForm";
 
 const InventoryDashboard = () => {
-  const [activeView, setActiveView] = useState<'overview' | 'models' | 'movements' | 'reports'>('overview');
-  const [showAddModel, setShowAddModel] = useState(false);
   const [showMovementForm, setShowMovementForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -29,57 +26,6 @@ const InventoryDashboard = () => {
   const totalValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
   const lowStockItems = inventoryData.filter(item => item.currentStock <= item.minimumStock);
 
-  if (activeView === 'models') {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Modelos de Laptops</h2>
-          <div className="flex gap-2">
-            <Button onClick={() => setShowAddModel(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Modelo
-            </Button>
-            <Button variant="outline" onClick={() => setActiveView('overview')}>
-              Volver al Dashboard
-            </Button>
-          </div>
-        </div>
-        <InventoryList />
-        {showAddModel && (
-          <LaptopModelForm 
-            onClose={() => setShowAddModel(false)}
-            onSave={() => {
-              setShowAddModel(false);
-            }}
-          />
-        )}
-      </div>
-    );
-  }
-
-  if (activeView === 'movements') {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Movimientos de Stock</h2>
-          <div className="flex gap-2">
-            <Button onClick={() => setShowMovementForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Registrar Movimiento
-            </Button>
-            <Button variant="outline" onClick={() => setActiveView('overview')}>
-              Volver al Dashboard
-            </Button>
-          </div>
-        </div>
-        <StockMovementForm 
-          isOpen={showMovementForm}
-          onClose={() => setShowMovementForm(false)}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -92,12 +38,6 @@ const InventoryDashboard = () => {
           >
             <Plus className="h-4 w-4 mr-2" />
             Ingreso de Stock
-          </Button>
-          <Button variant="outline" onClick={() => setActiveView('models')}>
-            Gestionar Modelos
-          </Button>
-          <Button variant="outline" onClick={() => setActiveView('movements')}>
-            Movimientos
           </Button>
         </div>
       </div>

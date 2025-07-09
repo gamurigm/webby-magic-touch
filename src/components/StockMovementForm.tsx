@@ -11,6 +11,9 @@ import { Plus, Minus } from "lucide-react";
 import { useInventoryManagement } from "@/hooks/useInventoryManagement";
 import { toast } from "@/hooks/use-toast";
 import React from 'react';
+import { categories } from "@/data/categories";
+import { brands } from "@/data/brands";
+import { locations } from "@/data/locations";
 
 interface StockMovementFormProps {
   isOpen: boolean;
@@ -18,7 +21,7 @@ interface StockMovementFormProps {
 }
 
 const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
-  const { laptopModels, registerStockEntry, registerStockExit } = useInventoryManagement();
+  const { laptopModels, registerStockEntry, registerStockExit, addLaptopModel } = useInventoryManagement();
   const [movementType, setMovementType] = useState<'purchase' | 'return' | 'consignment'>('purchase');
   const [selectedModelId, setSelectedModelId] = useState('');
   const [reason, setReason] = useState('');
@@ -73,8 +76,28 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
     }
   }, [isOpen]);
 
+  // Autocompletar campos al seleccionar modelo existente
+  React.useEffect(() => {
+    if (selectedModelId) {
+      const m = laptopModels.find(m => m.id === selectedModelId);
+      if (m) {
+        setCategory(m.category);
+        setBrand(m.brand);
+        setModel(m.model);
+        setProcessor(m.processor);
+        setRam(m.ram);
+        setStorage(m.storage);
+        setLocation(m.location);
+        setUnitCost(m.cost.toString());
+      }
+    }
+  }, [selectedModelId]);
+
+  // Calcular costo total
+  const totalCost = quantity * (parseFloat(unitCost) || 0);
+
   const handleSubmit = () => {
-    if (!category || !brand || !model || !serial || !processor || !ram || !storage || !gpu || !location || !unitCost || !quantity) {
+    if (!category || !brand || !model || !processor || !ram || !storage || !gpu || !location || !unitCost || !quantity) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -82,6 +105,36 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
       });
       return;
     }
+    let modelId = selectedModelId;
+    // Si no se seleccionó modelo, crear uno nuevo
+    if (!modelId) {
+      const validCategories = ['gamer', 'oficina', 'ultrabook'];
+      const safeCategory = validCategories.includes(category) ? category : 'oficina';
+      const newModel = {
+        brand,
+        model,
+        category: safeCategory as 'gamer' | 'oficina' | 'ultrabook',
+        processor,
+        ram,
+        storage,
+        screen: '',
+        operatingSystem: '',
+        price: 0,
+        cost: parseFloat(unitCost),
+        minimumStock: 1,
+        location
+      };
+      addLaptopModel(newModel);
+      const created = [...laptopModels, newModel].reverse().find(m => m.model === model && m.brand === brand);
+      modelId = created ? created.id : '';
+    }
+    if (!modelId) {
+      toast({ title: "Error", description: "No se pudo identificar el modelo." });
+      return;
+    }
+    // Generar seriales automáticos vacíos (o puedes usar un patrón)
+    const serialNumbers = Array.from({ length: quantity }).map((_, i) => "");
+    registerStockEntry(modelId, serialNumbers, movementType, reference);
     toast({
       title: "Ingreso registrado",
       description: `Se registró el ingreso de ${quantity} unidad(es)`
@@ -139,34 +192,65 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
               <div className="w-1 h-6 bg-blue-600 rounded mr-2" />
               <h3 className="text-lg font-semibold">Información del Producto</h3>
             </div>
+            <div className="mb-4">
+              <Label>Modelo existente</Label>
+              <Select value={selectedModelId} onValueChange={setSelectedModelId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar modelo existente (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {laptopModels.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.brand} {m.model} ({m.processor}, {m.ram}, {m.storage})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <Label>Categoría</Label>
-                <Input value={category} onChange={e => setCategory(e.target.value)} placeholder="Seleccionar categoría" />
+                <Select value={category} onValueChange={setCategory} disabled={!!selectedModelId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Marca</Label>
-                <Input value={brand} onChange={e => setBrand(e.target.value)} placeholder="Seleccionar marca" />
+                <Select value={brand} onValueChange={setBrand} disabled={!!selectedModelId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar marca" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Modelo</Label>
-                <Input value={model} onChange={e => setModel(e.target.value)} placeholder="Ej: E Comprio 52320000" />
+                <Input value={model} onChange={e => setModel(e.target.value)} placeholder="Ej: E Comprio 52320000" disabled={!!selectedModelId} />
               </div>
-              <div>
+              {/* <div>
                 <Label>Número de Serie</Label>
                 <Input value={serial} onChange={e => setSerial(e.target.value)} placeholder="Ej: AB02345578779" />
-              </div>
+              </div> */}
               <div>
                 <Label>Procesador</Label>
-                <Input value={processor} onChange={e => setProcessor(e.target.value)} placeholder="Ej: Intel Core i7 11700K" />
+                <Input value={processor} onChange={e => setProcessor(e.target.value)} placeholder="Ej: Intel Core i7 11700K" disabled={!!selectedModelId} />
               </div>
               <div>
                 <Label>RAM (GB)</Label>
-                <Input value={ram} onChange={e => setRam(e.target.value)} placeholder="Ej: 16" />
+                <Input value={ram} onChange={e => setRam(e.target.value)} placeholder="Ej: 16" disabled={!!selectedModelId} />
               </div>
               <div>
                 <Label>Almacenamiento</Label>
-                <Input value={storage} onChange={e => setStorage(e.target.value)} placeholder="Ej: 512GB SSD" />
+                <Input value={storage} onChange={e => setStorage(e.target.value)} placeholder="Ej: 512GB SSD" disabled={!!selectedModelId} />
               </div>
               <div>
                 <Label>Tarjeta Gráfica</Label>
@@ -188,11 +272,24 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
               </div>
               <div>
                 <Label>Costo Unitario (USD)</Label>
-                <Input type="number" min={0} step={0.01} value={unitCost} onChange={e => setUnitCost(e.target.value)} placeholder="$0.00" />
+                <Input type="number" min={0} step={0.01} value={unitCost} onChange={e => setUnitCost(e.target.value)} placeholder="$0.00" disabled={!!selectedModelId} />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Costo Total</Label>
+                <Input value={totalCost.toFixed(2)} readOnly disabled />
               </div>
               <div className="md:col-span-2">
                 <Label>Ubicación Física</Label>
-                <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Seleccionar ubicación" />
+                <Select value={location} onValueChange={setLocation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar ubicación" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
