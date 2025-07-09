@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -203,7 +202,7 @@ const InventoryDashboard = () => {
                       <AlertTriangle className="h-4 w-4 text-orange-500" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">Stock disponible</p>
+                  <p className="text-sm text-muted-foreground">Stock disponible</p>
                   <p className="text-xs text-gray-500">Mínimo: {item.minimumStock}</p>
                   <p className="text-xs text-green-600">Valor: ${item.totalValue.toFixed(2)}</p>
                 </div>

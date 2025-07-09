@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -159,7 +158,7 @@ const InventoryList = () => {
                     <div className={`text-lg font-bold ${item.currentStock <= item.minimumStock ? 'text-orange-600' : 'text-green-600'}`}>
                       {item.currentStock}
                     </div>
-                    <div className="text-xs text-gray-500">Min: {item.minimumStock}</div>
+                    <div className="text-xs text-muted-foreground">Min: {item.minimumStock}</div>
                   </div>
                 </TableCell>
                 

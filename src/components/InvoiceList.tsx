@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { Invoice, CreditNote } from "@/types/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,7 +168,7 @@ const InvoiceList = ({ invoices, onUpdateInvoice, onCreateCreditNote }: InvoiceL
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <p className="text-gray-500">No hay facturas creadas aún.</p>
+          <p className="text-gray-500 text-muted-foreground">No hay facturas creadas aún.</p>
         </CardContent>
       </Card>
     );

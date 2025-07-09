@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,7 +71,7 @@ const InvoiceForm = ({
               onChange={(e) => onAutoEmailEnabledChange(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="auto-email" className="text-sm font-medium">
+            <Label htmlFor="auto-email" className="text-sm font-medium text-foreground">
               Enviar factura automáticamente por email después de crearla
             </Label>
           </div>
