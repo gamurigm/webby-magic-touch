@@ -1,8 +1,10 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useInvoiceForm } from "@/hooks/useInvoiceForm";
 import InvoiceModal from "@/components/InvoiceModal";
 import InvoiceList from "@/components/InvoiceList";
+import CreditNoteList from "@/components/CreditNoteList";
 import EmailInvoiceDialog from "@/components/EmailInvoiceDialog";
 import InvoiceForm from "@/components/InvoiceForm";
 
@@ -32,6 +34,7 @@ const Index = () => {
     
     // Invoice state
     invoices,
+    creditNotes,
     currentInvoice,
     isInvoiceModalOpen,
     showInvoiceList,
@@ -53,15 +56,48 @@ const Index = () => {
     handleEmailSent
   } = useInvoiceForm();
 
+  // Estado para mostrar notas de crédito
+  const [showCreditNotes, setShowCreditNotes] = useState(false);
+
+  if (showCreditNotes) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6 flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Gestión de Notas de Crédito</h1>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowCreditNotes(false)}>
+                Crear Nueva Factura
+              </Button>
+              <Button variant="outline" onClick={() => setShowInvoiceList(true)}>
+                Ver Facturas
+              </Button>
+            </div>
+          </div>
+          <CreditNoteList creditNotes={creditNotes} />
+        </div>
+      </div>
+    );
+  }
+
   if (showInvoiceList) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6 flex justify-between items-center">
             <h1 className="text-3xl font-bold">Gestión de Facturas</h1>
-            <Button onClick={() => setShowInvoiceList(false)}>
-              Crear Nueva Factura
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowInvoiceList(false)}>
+                Crear Nueva Factura
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCreditNotes(true)}
+                disabled={creditNotes.length === 0}
+              >
+                Ver Notas de Crédito ({creditNotes.length})
+              </Button>
+            </div>
           </div>
           <InvoiceList 
             invoices={invoices} 
@@ -78,13 +114,22 @@ const Index = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-4 flex justify-between items-center">
           <div></div>
-          <Button 
-            variant="outline" 
-            onClick={() => setShowInvoiceList(true)}
-            disabled={invoices.length === 0}
-          >
-            Ver Facturas ({invoices.length})
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInvoiceList(true)}
+              disabled={invoices.length === 0}
+            >
+              Ver Facturas ({invoices.length})
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowCreditNotes(true)}
+              disabled={creditNotes.length === 0}
+            >
+              Ver Notas de Crédito ({creditNotes.length})
+            </Button>
+          </div>
         </div>
 
         <InvoiceForm
