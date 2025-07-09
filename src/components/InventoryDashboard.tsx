@@ -1,0 +1,219 @@
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Package, AlertTriangle, TrendingDown, TrendingUp, Plus } from "lucide-react";
+import { useInventoryManagement } from "@/hooks/useInventoryManagement";
+import InventoryList from "./InventoryList";
+import StockMovementForm from "./StockMovementForm";
+import LaptopModelForm from "./LaptopModelForm";
+
+const InventoryDashboard = () => {
+  const [activeView, setActiveView] = useState<'overview' | 'models' | 'movements' | 'reports'>('overview');
+  const [showAddModel, setShowAddModel] = useState(false);
+  const [showMovementForm, setShowMovementForm] = useState(false);
+  
+  const {
+    laptopModels,
+    stockAlerts,
+    getInventoryByModel,
+    dismissAlert
+  } = useInventoryManagement();
+
+  const inventoryData = getInventoryByModel();
+  const totalItems = inventoryData.reduce((sum, item) => sum + item.currentStock, 0);
+  const totalValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
+  const lowStockItems = inventoryData.filter(item => item.currentStock <= item.minimumStock);
+
+  if (activeView === 'models') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Modelos de Laptops</h2>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowAddModel(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Modelo
+            </Button>
+            <Button variant="outline" onClick={() => setActiveView('overview')}>
+              Volver al Dashboard
+            </Button>
+          </div>
+        </div>
+        <InventoryList />
+        {showAddModel && (
+          <LaptopModelForm 
+            onClose={() => setShowAddModel(false)}
+            onSave={() => {
+              setShowAddModel(false);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (activeView === 'movements') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Movimientos de Stock</h2>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowMovementForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Registrar Movimiento
+            </Button>
+            <Button variant="outline" onClick={() => setActiveView('overview')}>
+              Volver al Dashboard
+            </Button>
+          </div>
+        </div>
+        <StockMovementForm 
+          isOpen={showMovementForm}
+          onClose={() => setShowMovementForm(false)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Dashboard de Inventario</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setActiveView('models')}>
+            Gestionar Modelos
+          </Button>
+          <Button variant="outline" onClick={() => setActiveView('movements')}>
+            Movimientos
+          </Button>
+        </div>
+      </div>
+
+      {/* Alertas de Stock Bajo */}
+      {stockAlerts.length > 0 && (
+        <div className="space-y-2">
+          {stockAlerts.map(alert => {
+            const model = laptopModels.find(m => m.id === alert.laptopModelId);
+            return (
+              <Alert key={alert.id} className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="flex justify-between items-center">
+                  <span>
+                    <strong>{model?.brand} {model?.model}</strong> tiene stock bajo: 
+                    {alert.currentStock} unidades (mínimo: {alert.minimumStock})
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => dismissAlert(alert.id)}
+                  >
+                    Descartar
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Métricas Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalItems}</div>
+            <p className="text-xs text-muted-foreground">
+              unidades en stock
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">
+              valor del inventario
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Modelos</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{laptopModels.length}</div>
+            <p className="text-xs text-muted-foreground">
+              modelos registrados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Stock Bajo</CardTitle>
+            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{lowStockItems.length}</div>
+            <p className="text-xs text-muted-foreground">
+              modelos con stock bajo
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* RU-I3: Consulta de niveles de inventario en tiempo real */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Niveles de Inventario por Modelo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {inventoryData.map(item => (
+              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium">{item.brand} {item.model}</h3>
+                    <Badge variant={item.category === 'gamer' ? 'destructive' : item.category === 'ultrabook' ? 'default' : 'secondary'}>
+                      {item.category}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {item.processor} • {item.ram} RAM • {item.storage} • {item.screen}
+                  </p>
+                  <p className="text-xs text-gray-500">Ubicación: {item.location}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold">{item.currentStock}</span>
+                    {item.currentStock <= item.minimumStock && (
+                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">Stock disponible</p>
+                  <p className="text-xs text-gray-500">Mínimo: {item.minimumStock}</p>
+                  <p className="text-xs text-green-600">Valor: ${item.totalValue.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default InventoryDashboard;

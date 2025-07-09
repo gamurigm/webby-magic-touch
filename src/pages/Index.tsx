@@ -7,6 +7,7 @@ import InvoiceList from "@/components/InvoiceList";
 import CreditNoteList from "@/components/CreditNoteList";
 import EmailInvoiceDialog from "@/components/EmailInvoiceDialog";
 import InvoiceForm from "@/components/InvoiceForm";
+import InventoryDashboard from "@/components/InventoryDashboard";
 
 const Index = () => {
   const {
@@ -19,20 +20,14 @@ const Index = () => {
     currentProduct,
     setCurrentProduct,
     availableProducts,
-    
-    // Client state
     clientName,
     setClientName,
     clientEmail,
     setClientEmail,
     clientAddress,
     setClientAddress,
-    
-    // Payment state
     paymentMethod,
     setPaymentMethod,
-    
-    // Invoice state
     invoices,
     creditNotes,
     currentInvoice,
@@ -44,8 +39,6 @@ const Index = () => {
     invoiceToEmail,
     autoEmailEnabled,
     setAutoEmailEnabled,
-    
-    // Actions
     handleProductSelect,
     addProduct,
     removeProduct,
@@ -56,9 +49,40 @@ const Index = () => {
     handleEmailSent
   } = useInvoiceForm();
 
-  // Estado para mostrar notas de crédito
+  // Estados para navegación
   const [showCreditNotes, setShowCreditNotes] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
+  // Vista de Inventario
+  if (showInventory) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Sistema de Inventario</h1>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowInventory(false)}>
+                Crear Nueva Factura
+              </Button>
+              <Button variant="outline" onClick={() => setShowInvoiceList(true)}>
+                Ver Facturas
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCreditNotes(true)}
+                disabled={creditNotes.length === 0}
+              >
+                Ver Notas de Crédito ({creditNotes.length})
+              </Button>
+            </div>
+          </div>
+          <InventoryDashboard />
+        </div>
+      </div>
+    );
+  }
+
+  // Vista de Notas de Crédito
   if (showCreditNotes) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -72,6 +96,9 @@ const Index = () => {
               <Button variant="outline" onClick={() => setShowInvoiceList(true)}>
                 Ver Facturas
               </Button>
+              <Button variant="outline" onClick={() => setShowInventory(true)}>
+                Ver Inventario
+              </Button>
             </div>
           </div>
           <CreditNoteList creditNotes={creditNotes} />
@@ -80,6 +107,7 @@ const Index = () => {
     );
   }
 
+  // Vista de Lista de Facturas
   if (showInvoiceList) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -89,6 +117,9 @@ const Index = () => {
             <div className="flex gap-2">
               <Button onClick={() => setShowInvoiceList(false)}>
                 Crear Nueva Factura
+              </Button>
+              <Button variant="outline" onClick={() => setShowInventory(true)}>
+                Ver Inventario
               </Button>
               <Button 
                 variant="outline" 
@@ -109,12 +140,19 @@ const Index = () => {
     );
   }
 
+  // Vista Principal - Crear Factura
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-4 flex justify-between items-center">
-          <div></div>
+          <h1 className="text-3xl font-bold">Sistema de Facturación</h1>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInventory(true)}
+            >
+              Inventario
+            </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowInvoiceList(true)}
