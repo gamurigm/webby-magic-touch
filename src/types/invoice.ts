@@ -14,6 +14,8 @@ export interface Invoice {
   status: 'created' | 'sent' | 'paid' | 'cancelled';
   cancelledDate?: string;
   cancelReason?: string;
+  emailSentDate?: string;
+  emailRecipient?: string;
 }
 
 export interface Product {

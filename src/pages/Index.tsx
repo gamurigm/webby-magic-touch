@@ -12,6 +12,7 @@ import { Invoice, Product, CreditNote } from "@/types/invoice";
 import { calculateTaxes } from "@/utils/taxCalculations";
 import InvoiceModal from "@/components/InvoiceModal";
 import InvoiceList from "@/components/InvoiceList";
+import EmailInvoiceDialog from "@/components/EmailInvoiceDialog";
 
 const Index = () => {
   const [productType, setProductType] = useState<string>('laptops');
@@ -33,6 +34,9 @@ const Index = () => {
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [showInvoiceList, setShowInvoiceList] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [invoiceToEmail, setInvoiceToEmail] = useState<Invoice | null>(null);
+  const [autoEmailEnabled, setAutoEmailEnabled] = useState(false);
 
   const laptops = [
     { name: 'MacBook Air M2', price: 1199 },
@@ -142,6 +146,12 @@ const Index = () => {
       description: `Factura ${newInvoice.number} para ${clientName} por $${total.toFixed(2)}`,
     });
 
+    // Si el envío automático está habilitado, abrir diálogo de email
+    if (autoEmailEnabled) {
+      setInvoiceToEmail(newInvoice);
+      setShowEmailDialog(true);
+    }
+
     // Reset form
     setProducts([]);
     setClientName('');
@@ -167,6 +177,14 @@ const Index = () => {
   const handleCloseInvoiceModal = () => {
     setIsInvoiceModalOpen(false);
     setCurrentInvoice(null);
+  };
+
+  const handleEmailSent = (invoice: Invoice) => {
+    const updatedInvoices = invoices.map(inv => 
+      inv.id === invoice.id ? invoice : inv
+    );
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
   };
 
   // Calculate totals for preview
@@ -212,6 +230,22 @@ const Index = () => {
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             
+            {/* Opción de envío automático */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="auto-email"
+                  checked={autoEmailEnabled}
+                  onChange={(e) => setAutoEmailEnabled(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="auto-email" className="text-sm font-medium">
+                  Enviar factura automáticamente por email después de crearla
+                </Label>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Selección de productos</h3>
               
@@ -420,6 +454,13 @@ const Index = () => {
         invoice={currentInvoice}
         isOpen={isInvoiceModalOpen}
         onClose={handleCloseInvoiceModal}
+      />
+
+      <EmailInvoiceDialog
+        invoice={invoiceToEmail}
+        isOpen={showEmailDialog}
+        onClose={() => setShowEmailDialog(false)}
+        onEmailSent={handleEmailSent}
       />
     </div>
   );
