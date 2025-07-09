@@ -118,31 +118,32 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-green-50 border-blue-200">
         <DialogHeader>
-          <DialogTitle>Registrar Movimiento de Stock</DialogTitle>
+          <DialogTitle className="text-blue-700 flex items-center gap-2">
+            <Plus className="h-6 w-6 text-blue-400" /> Registrar Movimiento de Stock
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Tipo de Movimiento */}
           <div className="grid grid-cols-2 gap-4">
             <Card 
-              className={`cursor-pointer border-2 ${movementType === 'entry' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
+              className={`cursor-pointer border-2 shadow-md transition-all duration-200 ${movementType === 'entry' ? 'border-green-500 bg-gradient-to-br from-green-100 to-green-50 scale-105' : 'border-gray-200 bg-white hover:border-green-300'}`}
               onClick={() => setMovementType('entry')}
             >
               <CardHeader className="text-center">
                 <Plus className="h-8 w-8 mx-auto text-green-600" />
-                <CardTitle className="text-green-600">Entrada de Stock</CardTitle>
+                <CardTitle className="text-green-700 font-bold">Entrada de Stock</CardTitle>
               </CardHeader>
             </Card>
-            
             <Card 
-              className={`cursor-pointer border-2 ${movementType === 'exit' ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+              className={`cursor-pointer border-2 shadow-md transition-all duration-200 ${movementType === 'exit' ? 'border-red-500 bg-gradient-to-br from-red-100 to-red-50 scale-105' : 'border-gray-200 bg-white hover:border-red-300'}`}
               onClick={() => setMovementType('exit')}
             >
               <CardHeader className="text-center">
                 <Minus className="h-8 w-8 mx-auto text-red-600" />
-                <CardTitle className="text-red-600">Salida de Stock</CardTitle>
+                <CardTitle className="text-red-700 font-bold">Salida de Stock</CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -150,9 +151,9 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
           {/* Información del Modelo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Modelo de Laptop *</Label>
+              <Label className="text-blue-700">Modelo de Laptop *</Label>
               <Select value={selectedModelId} onValueChange={setSelectedModelId}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-blue-50 border-blue-200 focus:ring-blue-300">
                   <SelectValue placeholder="Seleccionar modelo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,11 +165,10 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label>Motivo *</Label>
+              <Label className="text-blue-700">Motivo *</Label>
               <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-blue-50 border-blue-200 focus:ring-blue-300">
                   <SelectValue placeholder="Seleccionar motivo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -184,15 +184,15 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
 
           {/* Información del modelo seleccionado */}
           {selectedModel && (
-            <Card className="bg-gray-50">
+            <Card className="bg-gradient-to-r from-blue-100 to-green-100 border-blue-200">
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium">{selectedModel.brand} {selectedModel.model}</span>
+                  <span className="font-medium text-blue-900">{selectedModel.brand} {selectedModel.model}</span>
                   <Badge variant={selectedModel.category === 'gamer' ? 'destructive' : selectedModel.category === 'ultrabook' ? 'default' : 'secondary'}>
                     {selectedModel.category}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-700">
                   {selectedModel.processor} • {selectedModel.ram} • {selectedModel.storage}
                 </p>
               </CardContent>
@@ -201,30 +201,32 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
 
           {/* Referencia */}
           <div>
-            <Label>Referencia (Factura, Orden, etc.)</Label>
+            <Label className="text-blue-700">Referencia (Factura, Orden, etc.)</Label>
             <Input
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               placeholder="Ej: FAC-001, ORD-123"
+              className="bg-blue-50 border-blue-200 focus:ring-blue-300"
             />
           </div>
 
           {/* Importación Masiva */}
-          <Card>
+          <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2 text-blue-700">
+                <Upload className="h-4 w-4 text-blue-400" />
                 Importación Masiva (Opcional)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Números de Serie (uno por línea o separados por comas)</Label>
+                <Label className="text-blue-700">Números de Serie (uno por línea o separados por comas)</Label>
                 <Textarea
                   value={bulkData}
                   onChange={(e) => setBulkData(e.target.value)}
-                  placeholder="SN001&#10;SN002&#10;SN003"
+                  placeholder={"SN001\nSN002\nSN003"}
                   rows={4}
+                  className="bg-blue-50 border-blue-200 focus:ring-blue-300"
                 />
               </div>
               <Button 
@@ -232,8 +234,9 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
                 variant="outline" 
                 onClick={handleBulkImport}
                 disabled={!bulkData.trim()}
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="h-4 w-4 mr-2 text-blue-400" />
                 Importar Números de Serie
               </Button>
             </CardContent>
@@ -242,9 +245,9 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
           {/* Números de Serie Individuales */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <Label>Números de Serie *</Label>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddSerialNumber}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Label className="text-blue-700">Números de Serie *</Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddSerialNumber} className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                <Plus className="h-4 w-4 mr-2 text-blue-400" />
                 Agregar
               </Button>
             </div>
@@ -255,6 +258,7 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
                     value={serial}
                     onChange={(e) => handleSerialNumberChange(index, e.target.value)}
                     placeholder={`Número de serie ${index + 1}`}
+                    className="bg-blue-50 border-blue-200 focus:ring-blue-300"
                   />
                   {serialNumbers.length > 1 && (
                     <Button 
@@ -262,6 +266,7 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleRemoveSerialNumber(index)}
+                      className="border-red-300 text-red-700 hover:bg-red-100"
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -273,21 +278,22 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
 
           {/* Notas */}
           <div>
-            <Label>Notas</Label>
+            <Label className="text-blue-700">Notas</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Información adicional..."
               rows={3}
+              className="bg-blue-50 border-blue-200 focus:ring-blue-300"
             />
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={onClose} className="border-gray-300 text-gray-700 hover:bg-gray-100">
               Cancelar
             </Button>
-            <Button onClick={handleSubmit}>
+            <Button onClick={handleSubmit} className={`text-white ${movementType === 'entry' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
               Registrar {movementType === 'entry' ? 'Entrada' : 'Salida'}
             </Button>
           </div>
