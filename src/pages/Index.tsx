@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useInvoiceForm } from "@/hooks/useInvoiceForm";
 import InvoiceModal from "@/components/InvoiceModal";
@@ -10,6 +9,23 @@ import InvoiceForm from "@/components/InvoiceForm";
 import InventoryDashboard from "@/components/InventoryDashboard";
 
 const Index = () => {
+  // Tema oscuro/claro
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "light";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
   const {
     // Product state
     productType,
