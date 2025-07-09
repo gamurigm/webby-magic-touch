@@ -86,6 +86,13 @@ const InventoryDashboard = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Dashboard de Inventario</h1>
         <div className="flex gap-2">
+          <Button
+            className="bg-green-600 hover:bg-green-700 text-white font-bold shadow"
+            onClick={() => setShowMovementForm(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Ingreso de Stock
+          </Button>
           <Button variant="outline" onClick={() => setActiveView('models')}>
             Gestionar Modelos
           </Button>
@@ -94,6 +101,7 @@ const InventoryDashboard = () => {
           </Button>
         </div>
       </div>
+      <StockMovementForm isOpen={showMovementForm} onClose={() => setShowMovementForm(false)} />
 
       {/* Alertas de Stock Bajo */}
       {stockAlerts.length > 0 && (
