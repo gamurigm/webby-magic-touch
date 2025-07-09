@@ -22,7 +22,24 @@ export const useInventoryManagement = () => {
       setLaptopModels(initialLaptopModels);
       localStorage.setItem('laptopModels', JSON.stringify(initialLaptopModels));
     }
-    if (savedInventory) setInventory(JSON.parse(savedInventory));
+
+    // Generar inventario inicial según el mínimo de cada modelo si no hay inventario
+    if (savedInventory) {
+      setInventory(JSON.parse(savedInventory));
+    } else {
+      const initialInventory = initialLaptopModels.flatMap(model =>
+        Array.from({ length: model.minimumStock }).map((_, idx) => ({
+          id: `${model.id}-SN${idx+1}`,
+          laptopModelId: model.id,
+          serialNumber: `${model.id}-SN${idx+1}`,
+          status: 'available',
+          dateAdded: new Date().toISOString(),
+          location: model.location
+        }))
+      );
+      setInventory(initialInventory);
+      localStorage.setItem('inventory', JSON.stringify(initialInventory));
+    }
     if (savedMovements) setStockMovements(JSON.parse(savedMovements));
     if (savedAlerts) setStockAlerts(JSON.parse(savedAlerts));
   }, []);
