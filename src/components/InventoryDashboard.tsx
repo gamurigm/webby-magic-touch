@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import ProductDetailsModal from './ProductDetailsModal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,8 @@ const InventoryDashboard = () => {
   const [activeView, setActiveView] = useState<'overview' | 'models' | 'movements' | 'reports'>('overview');
   const [showAddModel, setShowAddModel] = useState(false);
   const [showMovementForm, setShowMovementForm] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
   
   const {
     laptopModels,
@@ -183,7 +186,15 @@ const InventoryDashboard = () => {
         <CardContent>
           <div className="space-y-4">
             {inventoryData.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:shadow-lg transition-all bg-white"
+                onClick={() => {
+                  setSelectedProduct(item);
+                  setShowProductModal(true);
+                }}
+                title="Ver detalles del producto"
+              >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium">{item.brand} {item.model}</h3>
@@ -209,6 +220,11 @@ const InventoryDashboard = () => {
                 </div>
               </div>
             ))}
+            <ProductDetailsModal
+              isOpen={showProductModal}
+              onClose={() => setShowProductModal(false)}
+              product={selectedProduct}
+            />
           </div>
         </CardContent>
       </Card>
