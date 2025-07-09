@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { LaptopModel, InventoryItem, StockMovement, StockAlert } from "@/types/inventory";
 import { toast } from "@/hooks/use-toast";
+import { initialLaptopModels } from "@/data/initialLaptopModels";
 
 export const useInventoryManagement = () => {
   const [laptopModels, setLaptopModels] = useState<LaptopModel[]>([]);
@@ -16,7 +16,12 @@ export const useInventoryManagement = () => {
     const savedMovements = localStorage.getItem('stockMovements');
     const savedAlerts = localStorage.getItem('stockAlerts');
     
-    if (savedModels) setLaptopModels(JSON.parse(savedModels));
+    if (savedModels) {
+      setLaptopModels(JSON.parse(savedModels));
+    } else {
+      setLaptopModels(initialLaptopModels);
+      localStorage.setItem('laptopModels', JSON.stringify(initialLaptopModels));
+    }
     if (savedInventory) setInventory(JSON.parse(savedInventory));
     if (savedMovements) setStockMovements(JSON.parse(savedMovements));
     if (savedAlerts) setStockAlerts(JSON.parse(savedAlerts));
