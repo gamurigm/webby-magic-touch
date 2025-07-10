@@ -72,55 +72,47 @@ const InventoryDashboard = () => {
 
       {/* Métricas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="dark:bg-[#181c2b] dark:border-[#3b4252]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-lg font-medium dark:text-[#8fbcbb]">Total Items</CardTitle>
+            <Package className="h-5 w-5 dark:text-[#88c0d0]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalItems}</div>
-            <p className="text-xs text-muted-foreground">
-              unidades en stock
-            </p>
+            <div className="font-bold text-2xl md:text-3xl dark:text-[#a3be8c]">{totalItems}</div>
+            <p className="text-base dark:text-[#88c0d0]">unidades en stock</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-[#181c2b] dark:border-[#3b4252]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-lg font-medium dark:text-[#b48ead]">Valor Total</CardTitle>
+            <TrendingUp className="h-5 w-5 dark:text-[#b48ead]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              valor del inventario
-            </p>
+            <div className="font-bold text-2xl md:text-3xl dark:text-[#b48ead]">${totalValue.toFixed(2)}</div>
+            <p className="text-base dark:text-[#b48ead]">valor del inventario</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-[#181c2b] dark:border-[#3b4252]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Modelos</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-lg font-medium dark:text-[#ebcb8b]">Modelos</CardTitle>
+            <Package className="h-5 w-5 dark:text-[#ebcb8b]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{laptopModels.length}</div>
-            <p className="text-xs text-muted-foreground">
-              modelos registrados
-            </p>
+            <div className="font-bold text-2xl md:text-3xl dark:text-[#ebcb8b]">{laptopModels.length}</div>
+            <p className="text-base dark:text-[#ebcb8b]">modelos registrados</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-[#181c2b] dark:border-[#3b4252]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Stock Bajo</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-lg font-medium dark:text-[#d08770]">Stock Bajo</CardTitle>
+            <TrendingDown className="h-5 w-5 dark:text-[#d08770]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{lowStockItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              modelos con stock bajo
-            </p>
+            <div className="font-bold text-2xl md:text-3xl dark:text-[#d08770]">{lowStockItems.length}</div>
+            <p className="text-base dark:text-[#d08770]">modelos con stock bajo</p>
           </CardContent>
         </Card>
       </div>
@@ -128,14 +120,14 @@ const InventoryDashboard = () => {
       {/* RU-I3: Consulta de niveles de inventario en tiempo real */}
       <Card>
         <CardHeader>
-          <CardTitle>Niveles de Inventario por Modelo</CardTitle>
+          <CardTitle className="text-2xl font-bold dark:text-[#8fbcbb]">Niveles de Inventario por Modelo</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {inventoryData.map(item => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:shadow-lg transition-all bg-white"
+                className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:shadow-lg transition-all bg-white dark:bg-[#181c2b] dark:border-[#3b4252]"
                 onClick={() => {
                   setSelectedProduct(item);
                   setShowProductModal(true);
@@ -144,26 +136,26 @@ const InventoryDashboard = () => {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{item.brand} {item.model}</h3>
-                    <Badge variant={item.category === 'gamer' ? 'destructive' : item.category === 'ultrabook' ? 'default' : 'secondary'}>
+                    <h3 className="font-bold text-lg md:text-xl dark:text-[#8fbcbb]">{item.brand} {item.model}</h3>
+                    <Badge variant={item.category === 'gamer' ? 'destructive' : item.category === 'ultrabook' ? 'default' : 'secondary'} className="text-base md:text-lg dark:bg-[#3b4252] dark:text-[#ebcb8b]">
                       {item.category}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-base md:text-lg text-gray-600 dark:text-[#b48ead]">
                     {item.processor} • {item.ram} RAM • {item.storage} • {item.screen}
                   </p>
-                  <p className="text-xs text-gray-500">Ubicación: {item.location}</p>
+                  <p className="text-base dark:text-[#a3be8c]">Ubicación: {item.location}</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{item.currentStock}</span>
+                    <span className="font-bold text-2xl md:text-3xl dark:text-[#a3be8c]">{item.currentStock}</span>
                     {item.currentStock <= item.minimumStock && (
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <AlertTriangle className="h-5 w-5 dark:text-[#d08770]" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">Stock disponible</p>
-                  <p className="text-xs text-gray-500">Mínimo: {item.minimumStock}</p>
-                  <p className="text-xs text-green-600">Valor: ${item.totalValue.toFixed(2)}</p>
+                  <p className="text-base dark:text-[#ebcb8b]">Stock disponible</p>
+                  <p className="text-base dark:text-[#b48ead]">Mínimo: {item.minimumStock}</p>
+                  <p className="text-base dark:text-[#a3be8c] font-bold">Valor: ${item.totalValue.toFixed(2)}</p>
                 </div>
               </div>
             ))}
