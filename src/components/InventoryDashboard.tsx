@@ -37,7 +37,7 @@ const InventoryDashboard = () => {
             onClick={() => setShowMovementForm(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Ingreso de Stock
+            Gestión de Stock
           </Button>
         </div>
       </div>

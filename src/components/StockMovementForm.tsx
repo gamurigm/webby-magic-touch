@@ -22,7 +22,8 @@ interface StockMovementFormProps {
 
 const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
   const { laptopModels, registerStockEntry, registerStockExit, addLaptopModel } = useInventoryManagement();
-  const [movementType, setMovementType] = useState<'purchase' | 'return' | 'consignment'>('purchase');
+  const [movementKind, setMovementKind] = useState<'entrada' | 'salida'>('entrada');
+  const [movementType, setMovementType] = useState<'purchase' | 'return' | 'consignment' | 'sale' | 'promotion' | 'supplier_return'>('purchase');
   const [selectedModelId, setSelectedModelId] = useState('');
   const [reason, setReason] = useState('');
   const [reference, setReference] = useState('');
@@ -42,7 +43,7 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
   // Guardar borrador en localStorage
   const handleSaveDraft = () => {
     const draft = {
-      movementType, category, brand, model, serial, processor, ram, storage, gpu, quantity, unitCost, location, notes, reason, selectedModelId
+      movementKind, movementType, category, brand, model, serial, processor, ram, storage, gpu, quantity, unitCost, location, notes, reason, selectedModelId
     };
     localStorage.setItem('stockEntryDraft', JSON.stringify(draft));
     toast({
@@ -57,6 +58,7 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
       const draft = localStorage.getItem('stockEntryDraft');
       if (draft) {
         const d = JSON.parse(draft);
+        setMovementKind(d.movementKind || 'entrada');
         setMovementType(d.movementType || 'purchase');
         setCategory(d.category || '');
         setBrand(d.brand || '');
@@ -92,6 +94,18 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
       }
     }
   }, [selectedModelId]);
+
+  // Cambiar tipos de movimiento según entrada/salida
+  const entryTypes = [
+    { value: 'purchase', label: 'Compra' },
+    { value: 'return', label: 'Devolución de cliente' },
+    { value: 'consignment', label: 'Consignación' }
+  ];
+  const exitTypes = [
+    { value: 'sale', label: 'Venta' },
+    { value: 'promotion', label: 'Promoción' },
+    { value: 'supplier_return', label: 'Devolución a proveedor' }
+  ];
 
   const handleSubmit = () => {
     if (!category || !brand || !model || !processor || !ram || !storage || !gpu || !location || !unitCost || !quantity) {
@@ -130,55 +144,55 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
     }
     // Generar seriales automáticos vacíos (o puedes usar un patrón)
     const serialNumbers = Array.from({ length: quantity }).map((_, i) => "");
-    registerStockEntry(modelId, serialNumbers, movementType, reference);
-    toast({
-      title: "Ingreso registrado",
-      description: `Se registró el ingreso de ${quantity} unidad(es)`
-    });
+    if (movementKind === 'entrada') {
+      registerStockEntry(modelId, serialNumbers, movementType as 'purchase' | 'return' | 'consignment', reference);
+      toast({
+        title: "Ingreso registrado",
+        description: `Se registró el ingreso de ${quantity} unidad(es)`
+      });
+    } else {
+      registerStockExit(modelId, serialNumbers, movementType as 'sale' | 'promotion' | 'supplier_return', reference);
+      toast({
+        title: "Salida registrada",
+        description: `Se registró la salida de ${quantity} unidad(es)`
+      });
+    }
     localStorage.removeItem('stockEntryDraft');
     onClose();
   };
 
   const selectedModel = laptopModels.find(m => m.id === selectedModelId);
 
-  const entryReasons = [
-    { value: 'purchase', label: 'Compra' },
-    { value: 'return', label: 'Devolución de cliente' },
-    { value: 'consignment', label: 'Consignación' }
-  ];
-
-  const exitReasons = [
-    { value: 'sale', label: 'Venta' },
-    { value: 'promotion', label: 'Promoción' },
-    { value: 'supplier_return', label: 'Devolución a proveedor' }
-  ];
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-blue-200">
+      <DialogContent className={`max-w-3xl max-h-[90vh] overflow-y-auto ${movementKind === 'entrada' ? 'bg-white border-blue-200' : 'bg-[#fff7f2] border-orange-200'}`}>
         <div className="px-8 py-6">
-          <h2 className="text-3xl font-bold text-center mb-1">Ingreso de Stock</h2>
-          <p className="text-center text-gray-500 mb-8">Registre nuevas entradas de inventario de laptops accesorios</p>
+          <h2 className={`text-3xl font-bold text-center mb-1 ${movementKind === 'entrada' ? '' : 'text-orange-900'}`}>{movementKind === 'entrada' ? 'Ingreso de Stock' : 'Salida de Stock'}</h2>
+          <p className={`text-center mb-8 ${movementKind === 'entrada' ? 'text-gray-500' : 'text-orange-900'}`}>{movementKind === 'entrada' ? 'Registre nuevas entradas de inventario de laptops accesorios' : 'Registra salidas de inventario por ventas, promociones y devoluciones'}</p>
 
-          {/* Tipo de Ingreso */}
+          {/* Tipo de Movimiento */}
           <div className="mb-8">
             <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-blue-600 rounded mr-2" />
-              <h3 className="text-lg font-semibold">Tipo de Ingreso</h3>
+              <div className={`w-1 h-6 rounded mr-2 ${movementKind === 'entrada' ? 'bg-blue-600' : 'bg-orange-600'}`} />
+              <h3 className={`text-lg font-semibold ${movementKind === 'entrada' ? '' : 'text-orange-900'}`}>Tipo de {movementKind === 'entrada' ? 'Ingreso' : 'Salida'}</h3>
+            </div>
+            <div className="flex gap-4 mb-2">
+              <label className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementKind === 'entrada' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                <input type="radio" className="mr-2" checked={movementKind === 'entrada'} onChange={() => { setMovementKind('entrada'); setMovementType('purchase'); }} />
+                Entrada
+              </label>
+              <label className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementKind === 'salida' ? 'border-orange-600 bg-orange-50' : 'border-gray-300'}`}>
+                <input type="radio" className="mr-2" checked={movementKind === 'salida'} onChange={() => { setMovementKind('salida'); setMovementType('sale'); }} />
+                Salida
+              </label>
             </div>
             <div className="flex gap-4">
-              <label className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementType === 'purchase' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                <input type="radio" className="mr-2" checked={movementType === 'purchase'} onChange={() => setMovementType('purchase')} />
-                Compra Nueva
-              </label>
-              <label className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementType === 'return' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                <input type="radio" className="mr-2" checked={movementType === 'return'} onChange={() => setMovementType('return')} />
-                Devolución Cliente
-              </label>
-              <label className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementType === 'consignment' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                <input type="radio" className="mr-2" checked={movementType === 'consignment'} onChange={() => setMovementType('consignment')} />
-                Consignación
-              </label>
+              {(movementKind === 'entrada' ? entryTypes : exitTypes).map(t => (
+                <label key={t.value} className={`flex items-center px-4 py-2 border rounded-lg cursor-pointer ${movementType === t.value ? (movementKind === 'entrada' ? 'border-blue-600 bg-blue-50' : 'border-orange-600 bg-orange-50') : 'border-gray-300'}`}>
+                  <input type="radio" className="mr-2" checked={movementType === t.value} onChange={() => setMovementType(t.value as any)} />
+                  {t.label}
+                </label>
+              ))}
             </div>
           </div>
 
@@ -293,17 +307,19 @@ const StockMovementForm = ({ isOpen, onClose }: StockMovementFormProps) => {
           </div>
 
           {/* Barra inferior de resumen y acciones */}
-          <div className="w-full rounded-b-xl bg-gradient-to-r from-blue-600 via-purple-500 to-green-400 px-8 py-5 mt-0 flex flex-col gap-2">
-            <div className="text-white font-semibold mb-2">Reesumen del Ingreso</div>
+          <div className={`w-full rounded-b-xl px-8 py-5 mt-0 flex flex-col gap-2 ${movementKind === 'entrada' ? 'bg-gradient-to-r from-blue-600 via-purple-500 to-green-400' : 'bg-gradient-to-r from-orange-600 via-orange-400 to-yellow-300'}`}>
+            <div className={`font-semibold mb-2 ${movementKind === 'entrada' ? 'text-white' : 'text-orange-900'}`}>{movementKind === 'entrada' ? 'Reesumen del Ingreso' : 'Resumen de la Salida'}</div>
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 justify-end">
               <Button variant="outline" onClick={onClose} className="bg-white text-gray-700 border-gray-300 hover:bg-gray-100 font-semibold">
                 CANCELAR
               </Button>
-              <Button variant="outline" className="bg-white text-blue-700 border-blue-300 hover:bg-blue-50 font-semibold" onClick={handleSaveDraft}>
+              <Button variant="outline" className={`bg-white ${movementKind === 'entrada' ? 'text-blue-700 border-blue-300 hover:bg-blue-50' : 'text-orange-700 border-orange-300 hover:bg-orange-50'} font-semibold`} onClick={handleSaveDraft}>
                 GUARDAR BORRADOR
               </Button>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white font-bold">
-                REGISTRAR INGRESO
+              <Button onClick={handleSubmit} className={`${movementKind === 'entrada' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'} text-white font-bold`}>
+                {movementKind === 'entrada'
+                  ? (movementType === 'purchase' ? 'REGISTRAR INGRESO' : movementType === 'return' ? 'REGISTRAR DEVOLUCIÓN' : 'REGISTRAR CONSIGNACIÓN')
+                  : (movementType === 'sale' ? 'REGISTRAR VENTA' : movementType === 'promotion' ? 'REGISTRAR PROMOCIÓN' : 'REGISTRAR DEVOLUCIÓN A PROVEEDOR')}
               </Button>
             </div>
           </div>
