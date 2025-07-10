@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Login from "./Login";
 import { Button } from "@/components/ui/button";
 import { useInvoiceForm } from "@/hooks/useInvoiceForm";
 import InvoiceModal from "@/components/InvoiceModal";
@@ -9,6 +10,8 @@ import InvoiceForm from "@/components/InvoiceForm";
 import InventoryDashboard from "@/components/InventoryDashboard";
 
 const Index = () => {
+  // Estado de autenticación
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   // Tema oscuro/claro
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -69,6 +72,26 @@ const Index = () => {
   const [showCreditNotes, setShowCreditNotes] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
+  // Si no está logueado, mostrar login
+  if (!isLoggedIn) {
+    return <Login onLogin={() => setIsLoggedIn(true)} />;
+  }
+
+  // Botón de cerrar sesión
+  const LogoutButton = () => (
+    <button
+      onClick={() => setIsLoggedIn(false)}
+      className="ml-2 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg font-bold shadow-md transition-all duration-200 text-sm flex items-center gap-1 border-0 focus:outline-none focus:ring-2 focus:ring-red-300"
+      style={{ minWidth: 90 }}
+      title="Cerrar sesión"
+    >
+      <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1' />
+      </svg>
+      Cerrar sesión
+    </button>
+  );
+
   // Vista de Inventario
   if (showInventory) {
     return (
@@ -90,6 +113,7 @@ const Index = () => {
               >
                 Ver Notas de Crédito ({creditNotes.length})
               </Button>
+              <LogoutButton />
             </div>
           </div>
           <InventoryDashboard />
@@ -115,6 +139,7 @@ const Index = () => {
               <Button variant="outline" onClick={() => setShowInventory(true)}>
                 Ver Inventario
               </Button>
+              <LogoutButton />
             </div>
           </div>
           <CreditNoteList creditNotes={creditNotes} />
@@ -144,6 +169,7 @@ const Index = () => {
               >
                 Ver Notas de Crédito ({creditNotes.length})
               </Button>
+              <LogoutButton />
             </div>
           </div>
           <InvoiceList 
@@ -183,6 +209,7 @@ const Index = () => {
             >
               Ver Notas de Crédito ({creditNotes.length})
             </Button>
+            <LogoutButton />
           </div>
         </div>
 
