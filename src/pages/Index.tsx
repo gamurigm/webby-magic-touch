@@ -117,11 +117,20 @@ const Index = () => {
           <div className="mb-6 flex justify-between items-center">
             <h1 className="text-3xl font-bold">Sistema de Inventario</h1>
             <div className="flex gap-2">
-              <Button onClick={() => setShowInventory(false)}>
-                Crear Nueva Factura
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowInventory(false);
+                  setShowInvoiceList(true);
+                }}
+              >
+                Ver Facturas ({invoices.length})
               </Button>
-              <Button variant="outline" onClick={() => setShowInvoiceList(true)}>
-                Ver Facturas
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white font-bold shadow"
+                onClick={() => setShowInventory(false)}
+              >
+                Crear Nueva Factura
               </Button>
               <Button 
                 variant="outline" 
