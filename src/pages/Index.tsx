@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Login from "./Login";
 import { Button } from "@/components/ui/button";
 import { useInvoiceForm } from "@/hooks/useInvoiceForm";
+import { useInventoryManagement } from "@/hooks/useInventoryManagement";
 import InvoiceModal from "@/components/InvoiceModal";
 import InvoiceList from "@/components/InvoiceList";
 import CreditNoteList from "@/components/CreditNoteList";
@@ -73,6 +74,9 @@ const Index = () => {
     handleEmailSent
   } = useInvoiceForm();
 
+  // Hook de inventario
+  const { registerStockExit, inventory, laptopModels } = useInventoryManagement();
+
   // Estados para navegación
   const [showCreditNotes, setShowCreditNotes] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
@@ -84,6 +88,31 @@ const Index = () => {
     setShowInventory(true);
     setShowCreditNotes(false);
     setShowInvoiceList(false); // Usar el setter del hook
+  };
+
+  // Envolver handleSubmit para descontar inventario
+  const handleSubmitWithInventory = () => {
+    // Antes de emitir la factura, descontar inventario
+    products.forEach(product => {
+      // Buscar el modelo correspondiente
+      const model = laptopModels.find(m => m.model === product.name);
+      if (model) {
+        // Buscar seriales disponibles para ese modelo
+        const availableSerials = inventory
+          .filter(item => item.laptopModelId === model.id && item.status === 'available')
+          .slice(0, product.quantity)
+          .map(item => item.serialNumber);
+        if (availableSerials.length >= product.quantity) {
+          registerStockExit(model.id, availableSerials, 'sale');
+        } else {
+          // Si no hay suficiente stock, mostrar advertencia
+          // (opcional: podrías bloquear la emisión de la factura aquí)
+          // Por ahora, solo descontamos lo que hay
+          registerStockExit(model.id, availableSerials, 'sale');
+        }
+      }
+    });
+    handleSubmit();
   };
 
   // Al cerrar sesión, limpiar navegación
@@ -272,7 +301,7 @@ const Index = () => {
           onPaymentMethodChange={setPaymentMethod}
           autoEmailEnabled={autoEmailEnabled}
           onAutoEmailEnabledChange={setAutoEmailEnabled}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmitWithInventory}
         />
       </div>
 

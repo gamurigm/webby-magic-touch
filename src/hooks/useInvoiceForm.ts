@@ -3,8 +3,11 @@ import { useState, useEffect } from 'react';
 import { Invoice, Product, CreditNote } from "@/types/invoice";
 import { calculateTaxes } from "@/utils/taxCalculations";
 import { toast } from "@/hooks/use-toast";
+import { useInventoryManagement } from "@/hooks/useInventoryManagement";
 
 export const useInvoiceForm = () => {
+  // Obtener modelos reales del inventario
+  const { laptopModels } = useInventoryManagement();
   const [productType, setProductType] = useState<string>('laptops');
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -28,21 +31,15 @@ export const useInvoiceForm = () => {
   const [invoiceToEmail, setInvoiceToEmail] = useState<Invoice | null>(null);
   const [autoEmailEnabled, setAutoEmailEnabled] = useState(false);
 
-  const laptops = [
-    { name: 'MacBook Air M2', price: 1199 },
-    { name: 'Dell XPS 13', price: 999 },
-    { name: 'HP Spectre x360', price: 1299 },
-    { name: 'Lenovo ThinkPad X1', price: 1399 }
-  ];
-
-  const accessories = [
-    { name: 'Mouse inalámbrico', price: 29 },
-    { name: 'Teclado mecánico', price: 89 },
-    { name: 'Monitor 24"', price: 199 },
-    { name: 'Webcam HD', price: 59 }
-  ];
-
-  const availableProducts = productType === 'laptops' ? laptops : accessories;
+  // Productos disponibles: usar modelos reales del inventario
+  const availableProducts = productType === 'laptops'
+    ? laptopModels.map(m => ({ name: m.model, price: m.price }))
+    : [
+        { name: 'Mouse inalámbrico', price: 29 },
+        { name: 'Teclado mecánico', price: 89 },
+        { name: 'Monitor 24"', price: 199 },
+        { name: 'Webcam HD', price: 59 }
+      ];
 
   const handleProductSelect = (productName: string) => {
     const product = availableProducts.find(p => p.name === productName);
