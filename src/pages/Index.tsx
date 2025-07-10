@@ -10,8 +10,13 @@ import InvoiceForm from "@/components/InvoiceForm";
 import InventoryDashboard from "@/components/InventoryDashboard";
 
 const Index = () => {
-  // Estado de autenticación
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Estado de autenticación persistente
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isLoggedIn") === "true";
+    }
+    return false;
+  });
   // Tema oscuro/claro
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -75,6 +80,7 @@ const Index = () => {
   // Forzar dashboard de inventario tras login
   const handleLogin = () => {
     setIsLoggedIn(true);
+    localStorage.setItem("isLoggedIn", "true");
     setShowInventory(true);
     setShowCreditNotes(false);
     setShowInvoiceList(false); // Usar el setter del hook
@@ -83,6 +89,7 @@ const Index = () => {
   // Al cerrar sesión, limpiar navegación
   const handleLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem("isLoggedIn");
     setShowInventory(false);
     setShowCreditNotes(false);
     setShowInvoiceList(false); // Usar el setter del hook
