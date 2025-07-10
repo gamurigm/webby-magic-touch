@@ -72,15 +72,32 @@ const Index = () => {
   const [showCreditNotes, setShowCreditNotes] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
+  // Forzar dashboard de inventario tras login
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setShowInventory(true);
+    setShowCreditNotes(false);
+    setShowInvoiceList(false); // Usar el setter del hook
+  };
+
+  // Al cerrar sesión, limpiar navegación
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setShowInventory(false);
+    setShowCreditNotes(false);
+    setShowInvoiceList(false); // Usar el setter del hook
+  };
+
+
   // Si no está logueado, mostrar login
   if (!isLoggedIn) {
-    return <Login onLogin={() => setIsLoggedIn(true)} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   // Botón de cerrar sesión
   const LogoutButton = () => (
     <button
-      onClick={() => setIsLoggedIn(false)}
+      onClick={handleLogout}
       className="ml-2 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg font-bold shadow-md transition-all duration-200 text-sm flex items-center gap-1 border-0 focus:outline-none focus:ring-2 focus:ring-red-300"
       style={{ minWidth: 90 }}
       title="Cerrar sesión"
@@ -92,7 +109,7 @@ const Index = () => {
     </button>
   );
 
-  // Vista de Inventario
+  // Vista de Inventario (pantalla principal tras login)
   if (showInventory) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -183,6 +200,8 @@ const Index = () => {
   }
 
   // Vista Principal - Crear Factura
+  // Si no está ninguna navegación, mostrar dashboard de inventario por defecto
+  // (esto es redundante, pero asegura que siempre se muestre el dashboard si todo está en false)
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
